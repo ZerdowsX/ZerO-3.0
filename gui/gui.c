@@ -13,6 +13,7 @@ static int cursor_prev_y = 0;
 static u8 cursor_bg[8 * 12];
 static unsigned int clock_h = 0;
 static unsigned int clock_m = 0;
+static unsigned int clock_s = 0;
 
 static const int taskbar_h = 22;
 static const int start_w = 54;
@@ -117,9 +118,11 @@ void gui_draw(void) {
                       (start_pressed || start_menu_open), "Start");
 
     (void)mouse_ready;
-    draw_two_digits(276, SCREEN_H - taskbar_h + 10, clock_h, 15);
+    draw_two_digits(258, SCREEN_H - taskbar_h + 10, clock_h, 15);
+    gfx_text(270, SCREEN_H - taskbar_h + 10, ":", 15);
+    draw_two_digits(276, SCREEN_H - taskbar_h + 10, clock_m, 15);
     gfx_text(288, SCREEN_H - taskbar_h + 10, ":", 15);
-    draw_two_digits(294, SCREEN_H - taskbar_h + 10, clock_m, 15);
+    draw_two_digits(294, SCREEN_H - taskbar_h + 10, clock_s, 15);
 
     if (start_menu_open) {
         gfx_rect(4, SCREEN_H - taskbar_h - 82, 120, 80, 8);
@@ -148,14 +151,6 @@ void gui_mouse_move(int dx, int dy) {
     if (mouse_y > SCREEN_H - 12) mouse_y = SCREEN_H - 12;
 
     if (mouse_x == old_x && mouse_y == old_y) return;
-
-    int in_start = mouse_x >= 4 && mouse_x < 4 + start_w &&
-                   mouse_y >= SCREEN_H - taskbar_h + 3 && mouse_y < SCREEN_H - 3;
-    if (in_start && !start_menu_open) {
-        start_menu_open = 1;
-        gui_draw();
-        return;
-    }
 
     restore_cursor_bg();
     save_cursor_bg(mouse_x, mouse_y);
@@ -192,11 +187,12 @@ void gui_set_mouse_ready(int ready) {
 }
 
 void gui_set_clock_seconds(unsigned int seconds) {
-    unsigned int total_minutes = seconds / 60;
-    unsigned int h = (total_minutes / 60) % 24;
-    unsigned int m = total_minutes % 60;
-    if (h == clock_h && m == clock_m) return;
+    unsigned int h = (seconds / 3600) % 24;
+    unsigned int m = (seconds / 60) % 60;
+    unsigned int s = seconds % 60;
+    if (h == clock_h && m == clock_m && s == clock_s) return;
     clock_h = h;
     clock_m = m;
+    clock_s = s;
     gui_draw();
 }

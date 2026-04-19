@@ -43,7 +43,16 @@ static int mouse_expect_ack(void) {
     return 0;
 }
 
+static void mouse_flush_output(void) {
+    for (int i = 0; i < 32; ++i) {
+        if (!(inb(0x64) & 0x01)) break;
+        (void)inb(0x60);
+    }
+}
+
 void mouse_init(void) {
+    mouse_flush_output();
+
     if (!mouse_wait_write()) return;
     outb(0x64, 0xA8);
 
@@ -57,11 +66,17 @@ void mouse_init(void) {
     if (!mouse_wait_write()) return;
     outb(0x60, status);
 
-    if (!mouse_write(0xF6)) return;
-    if (!mouse_expect_ack()) return;
-    if (!mouse_write(0xF4)) return;
-    if (!mouse_expect_ack()) return;
+    if (mouse_write(0xF6)) {
+        (void)mouse_expect_ack();
+    }
+    if (mouse_write(0xF4)) {
+        (void)mouse_expect_ack();
+    }
 
+    /*
+     * Be permissive: on some setups (USB legacy emulation) ACK flow can differ,
+     * but IRQ12 packets may still arrive.
+     */
     g_mouse_ready = 1;
 }
 

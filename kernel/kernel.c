@@ -29,7 +29,6 @@ void kmain(void) {
     gfx_text(8, 8, "Kernel ready", 15);
 
     u32 shown_seconds = 0;
-    int kb_click = 0;
     while (1) {
         u32 now = timer_seconds();
         if (now != shown_seconds) {
@@ -40,16 +39,6 @@ void kmain(void) {
         char c = keyboard_last_char();
         if (c) {
             gui_keyboard_input(c);
-            if (!mouse_is_ready()) {
-                if (c == 'w' || c == 'W') gui_mouse_move(0, -3);
-                if (c == 's' || c == 'S') gui_mouse_move(0, 3);
-                if (c == 'a' || c == 'A') gui_mouse_move(-3, 0);
-                if (c == 'd' || c == 'D') gui_mouse_move(3, 0);
-                if (c == ' ') {
-                    kb_click = !kb_click;
-                    gui_mouse_click(kb_click);
-                }
-            }
         }
         __asm__ volatile ("hlt");
     }
