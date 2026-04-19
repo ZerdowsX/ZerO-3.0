@@ -6,6 +6,7 @@ static int mouse_y = SCREEN_H / 2;
 static int start_pressed = 0;
 static int start_menu_open = 0;
 static int mouse_ready = 0;
+static int mouse_left_down = 0;
 static char input_line[40];
 static int input_len = 0;
 
@@ -80,6 +81,10 @@ void gui_draw(void) {
 }
 
 void gui_mouse_move(int dx, int dy) {
+    if (dx == 0 && dy == 0) return;
+
+    int old_x = mouse_x;
+    int old_y = mouse_y;
     mouse_x += dx;
     mouse_y += dy;
 
@@ -88,10 +93,15 @@ void gui_mouse_move(int dx, int dy) {
     if (mouse_x >= SCREEN_W) mouse_x = SCREEN_W - 1;
     if (mouse_y >= SCREEN_H) mouse_y = SCREEN_H - 1;
 
-    gui_draw();
+    if (mouse_x != old_x || mouse_y != old_y) {
+        gui_draw();
+    }
 }
 
 void gui_mouse_click(int left_down) {
+    if (left_down == mouse_left_down) return;
+    mouse_left_down = left_down;
+
     int in_start = mouse_x >= 4 && mouse_x < 4 + start_w &&
                    mouse_y >= SCREEN_H - taskbar_h + 3 && mouse_y < SCREEN_H - 3;
     start_pressed = (left_down && in_start) ? 1 : 0;
