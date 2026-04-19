@@ -13,7 +13,7 @@ C_SOURCES=$(wildcard kernel/*.c drivers/*.c graphics/*.c gui/*.c)
 C_OBJS=$(patsubst %.c,$(BUILD)/%.o,$(C_SOURCES))
 ASM_KERNEL_OBJS=$(BUILD)/kernel/entry.o $(BUILD)/kernel/interrupts.o
 
-all: os-image.bin
+all: zero3.iso
 
 $(BUILD):
 	mkdir -p $(BUILD)/kernel $(BUILD)/drivers $(BUILD)/graphics $(BUILD)/gui $(BUILD)/bootloader
@@ -43,15 +43,17 @@ $(BUILD)/kernel/kernel.bin: $(BUILD)/kernel/kernel.elf
 os-image.bin: $(BUILD)/bootloader/boot.bin $(BUILD)/bootloader/stage2.bin $(BUILD)/kernel/kernel.bin
 	cat $(BUILD)/bootloader/boot.bin $(BUILD)/bootloader/stage2.bin $(BUILD)/kernel/kernel.bin > $@
 
-iso: os-image.bin
+zero3.iso: os-image.bin
 	mkdir -p iso/boot
 	cp os-image.bin iso/boot/os-image.bin
 	xorriso -as mkisofs -R -b boot/os-image.bin -no-emul-boot -boot-load-size 4 -o zero3.iso iso
 
+iso: zero3.iso
+
 run: os-image.bin
 	qemu-system-i386 -drive format=raw,file=os-image.bin
 
-run-iso: iso
+run-iso: zero3.iso
 	qemu-system-i386 -cdrom zero3.iso
 
 clean:

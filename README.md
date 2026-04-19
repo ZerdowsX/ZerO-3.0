@@ -44,13 +44,19 @@ Makefile            # сборка raw image + ISO + запуск в QEMU
 - `qemu-system-i386`
 - `xorriso` (для ISO цели)
 
-## Сборка
+## Сборка (по умолчанию сразу ISO)
 
 ```bash
 make
 ```
 
-Результат: `os-image.bin` (raw образ, BIOS-bootable).
+Результат: `zero3.iso` и `os-image.bin`.
+
+Если нужен только raw образ:
+
+```bash
+make os-image.bin
+```
 
 ## Запуск
 
