@@ -39,8 +39,13 @@ static void pic_remap(void) {
     outb(0x21, 0x01); io_wait();
     outb(0xA1, 0x01); io_wait();
 
-    outb(0x21, 0x00);
-    outb(0xA1, 0x00);
+    /*
+     * Mask IRQ lines we do not handle yet.
+     * Master PIC: enable IRQ1 (keyboard) and IRQ2 (cascade to slave).
+     * Slave PIC:  enable IRQ12 (mouse).
+     */
+    outb(0x21, 0xF9);
+    outb(0xA1, 0xEF);
 }
 
 void irq_ack(u8 irq) {
