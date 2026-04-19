@@ -56,6 +56,7 @@ void gfx_char(i32 x, i32 y, char c, u8 color) {
     static const u8 t[7]={0x04,0x04,0x1F,0x04,0x04,0x04,0x03};
     static const u8 v[7]={0x00,0x00,0x11,0x11,0x11,0x0A,0x04};
     static const u8 y_ch[7]={0x00,0x00,0x11,0x11,0x0F,0x01,0x0E};
+    static const u8 y[7]={0x00,0x00,0x11,0x11,0x0F,0x01,0x0E};
     static const u8 zero[7]={0x0E,0x11,0x13,0x15,0x19,0x11,0x0E};
     static const u8 one[7]={0x04,0x0C,0x04,0x04,0x04,0x04,0x0E};
     static const u8 colon[7]={0x00,0x04,0x00,0x00,0x04,0x00,0x00};
@@ -70,6 +71,7 @@ void gfx_char(i32 x, i32 y, char c, u8 color) {
         case 'k': g=k; break; case 'l': g=l; break; case 'n': g=n; break;
         case 'o': g=o; break; case 'r': g=r; break; case 's': g=s; break;
         case 't': g=t; break; case 'v': g=v; break; case 'y': g=y_ch; break;
+        case 't': g=t; break; case 'v': g=v; break; case 'y': g=y; break;
         case '0': g=zero; break; case '1': g=one; break; case ':': g=colon; break;
         case '-': g=dash; break; default: g=blank; break;
     }
