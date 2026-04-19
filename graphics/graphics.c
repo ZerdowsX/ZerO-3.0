@@ -1,0 +1,104 @@
+#include "graphics.h"
+
+static volatile u8* const VGA = (u8*)0xA0000;
+
+void gfx_putpixel(i32 x, i32 y, u8 color) {
+    if (x < 0 || y < 0 || x >= SCREEN_W || y >= SCREEN_H) return;
+    VGA[y * SCREEN_W + x] = color;
+}
+
+void gfx_clear(u8 color) {
+    for (i32 y = 0; y < SCREEN_H; ++y) {
+        for (i32 x = 0; x < SCREEN_W; ++x) {
+            VGA[y * SCREEN_W + x] = color;
+        }
+    }
+}
+
+void gfx_rect(i32 x, i32 y, i32 w, i32 h, u8 color) {
+    for (i32 yy = 0; yy < h; ++yy) {
+        for (i32 xx = 0; xx < w; ++xx) {
+            gfx_putpixel(x + xx, y + yy, color);
+        }
+    }
+}
+
+static void glyph5x7(i32 x, i32 y, const u8 g[7], u8 color) {
+    for (int r = 0; r < 7; ++r) {
+        for (int c = 0; c < 5; ++c) {
+            if ((g[r] >> (4 - c)) & 1) {
+                gfx_putpixel(x + c, y + r, color);
+            }
+        }
+    }
+}
+
+static const u8 GLYPH_BLANK[7] = {0,0,0,0,0,0,0};
+static const u8 GLYPH_A[7]={0x0E,0x11,0x11,0x1F,0x11,0x11,0x11};
+static const u8 GLYPH_D[7]={0x1E,0x11,0x11,0x11,0x11,0x11,0x1E};
+static const u8 GLYPH_K[7]={0x11,0x12,0x14,0x18,0x14,0x12,0x11};
+static const u8 GLYPH_O[7]={0x0E,0x11,0x11,0x11,0x11,0x11,0x0E};
+static const u8 GLYPH_R[7]={0x1E,0x11,0x11,0x1E,0x14,0x12,0x11};
+static const u8 GLYPH_S[7]={0x0F,0x10,0x10,0x0E,0x01,0x01,0x1E};
+static const u8 GLYPH_T[7]={0x1F,0x04,0x04,0x04,0x04,0x04,0x04};
+static const u8 GLYPH_a[7]={0x00,0x00,0x0E,0x01,0x0F,0x11,0x0F};
+static const u8 GLYPH_b[7]={0x10,0x10,0x1E,0x11,0x11,0x11,0x1E};
+static const u8 GLYPH_d[7]={0x01,0x01,0x0F,0x11,0x11,0x11,0x0F};
+static const u8 GLYPH_e[7]={0x00,0x00,0x0E,0x11,0x1F,0x10,0x0F};
+static const u8 GLYPH_i[7]={0x04,0x00,0x0C,0x04,0x04,0x04,0x0E};
+static const u8 GLYPH_k[7]={0x10,0x10,0x12,0x14,0x18,0x14,0x12};
+static const u8 GLYPH_l[7]={0x0C,0x04,0x04,0x04,0x04,0x04,0x0E};
+static const u8 GLYPH_n[7]={0x00,0x00,0x1E,0x11,0x11,0x11,0x11};
+static const u8 GLYPH_o[7]={0x00,0x00,0x0E,0x11,0x11,0x11,0x0E};
+static const u8 GLYPH_r[7]={0x00,0x00,0x16,0x19,0x10,0x10,0x10};
+static const u8 GLYPH_s[7]={0x00,0x00,0x0F,0x10,0x0E,0x01,0x1E};
+static const u8 GLYPH_t[7]={0x04,0x04,0x1F,0x04,0x04,0x04,0x03};
+static const u8 GLYPH_v[7]={0x00,0x00,0x11,0x11,0x11,0x0A,0x04};
+static const u8 GLYPH_y[7]={0x00,0x00,0x11,0x11,0x0F,0x01,0x0E};
+static const u8 GLYPH_0[7]={0x0E,0x11,0x13,0x15,0x19,0x11,0x0E};
+static const u8 GLYPH_1[7]={0x04,0x0C,0x04,0x04,0x04,0x04,0x0E};
+static const u8 GLYPH_COLON[7]={0x00,0x04,0x00,0x00,0x04,0x00,0x00};
+static const u8 GLYPH_DASH[7]={0x00,0x00,0x00,0x1F,0x00,0x00,0x00};
+
+static const u8* select_glyph(char ch) {
+    switch (ch) {
+        case 'A': return GLYPH_A;
+        case 'D': return GLYPH_D;
+        case 'K': return GLYPH_K;
+        case 'O': return GLYPH_O;
+        case 'R': return GLYPH_R;
+        case 'S': return GLYPH_S;
+        case 'T': return GLYPH_T;
+        case 'a': return GLYPH_a;
+        case 'b': return GLYPH_b;
+        case 'd': return GLYPH_d;
+        case 'e': return GLYPH_e;
+        case 'i': return GLYPH_i;
+        case 'k': return GLYPH_k;
+        case 'l': return GLYPH_l;
+        case 'n': return GLYPH_n;
+        case 'o': return GLYPH_o;
+        case 'r': return GLYPH_r;
+        case 's': return GLYPH_s;
+        case 't': return GLYPH_t;
+        case 'v': return GLYPH_v;
+        case 'y': return GLYPH_y;
+        case '0': return GLYPH_0;
+        case '1': return GLYPH_1;
+        case ':': return GLYPH_COLON;
+        case '-': return GLYPH_DASH;
+        default: return GLYPH_BLANK;
+    }
+}
+
+void gfx_char(i32 x, i32 y, char c, u8 color) {
+    const u8* g = select_glyph(c);
+    glyph5x7(x, y, g, color);
+}
+
+void gfx_text(i32 x, i32 y, const char* s, u8 color) {
+    while (*s) {
+        gfx_char(x, y, *s++, color);
+        x += 6;
+    }
+}
