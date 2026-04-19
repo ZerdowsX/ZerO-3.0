@@ -7,6 +7,7 @@
 
 void gfx_clear(u8 color);
 void gfx_putpixel(i32 x, i32 y, u8 color);
+u8 gfx_getpixel(i32 x, i32 y);
 void gfx_rect(i32 x, i32 y, i32 w, i32 h, u8 color);
 void gfx_char(i32 x, i32 y, char c, u8 color);
 void gfx_text(i32 x, i32 y, const char* s, u8 color);
