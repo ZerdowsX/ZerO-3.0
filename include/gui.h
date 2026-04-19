@@ -7,5 +7,6 @@ void gui_mouse_move(int dx, int dy);
 void gui_mouse_click(int left_down);
 void gui_keyboard_input(char c);
 void gui_set_mouse_ready(int ready);
+void gui_set_clock_seconds(unsigned int seconds);
 
 #endif
