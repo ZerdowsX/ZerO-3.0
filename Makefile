@@ -15,6 +15,13 @@ ASM_KERNEL_OBJS=$(BUILD)/kernel/entry.o $(BUILD)/kernel/interrupts.o
 
 all: zero3.iso
 
+check-tools:
+	@command -v $(AS) >/dev/null 2>&1 || { echo "Missing dependency: $(AS). Install nasm."; exit 1; }
+	@command -v $(CC) >/dev/null 2>&1 || { echo "Missing dependency: $(CC). Install a cross-compiler toolchain (i686-elf)."; exit 1; }
+	@command -v $(LD) >/dev/null 2>&1 || { echo "Missing dependency: $(LD). Install a cross-compiler binutils toolchain (i686-elf)."; exit 1; }
+	@command -v $(OBJCOPY) >/dev/null 2>&1 || { echo "Missing dependency: $(OBJCOPY). Install a cross-compiler binutils toolchain (i686-elf)."; exit 1; }
+	@command -v xorriso >/dev/null 2>&1 || { echo "Missing dependency: xorriso. Install xorriso for ISO builds."; exit 1; }
+
 $(BUILD):
 	mkdir -p $(BUILD)/kernel $(BUILD)/drivers $(BUILD)/graphics $(BUILD)/gui $(BUILD)/bootloader
 
@@ -40,7 +47,7 @@ $(BUILD)/kernel/kernel.elf: $(ASM_KERNEL_OBJS) $(C_OBJS) linker.ld
 $(BUILD)/kernel/kernel.bin: $(BUILD)/kernel/kernel.elf
 	$(OBJCOPY) -O binary $< $@
 
-os-image.bin: $(BUILD)/bootloader/boot.bin $(BUILD)/bootloader/stage2.bin $(BUILD)/kernel/kernel.bin
+os-image.bin: check-tools $(BUILD)/bootloader/boot.bin $(BUILD)/bootloader/stage2.bin $(BUILD)/kernel/kernel.bin
 	cat $(BUILD)/bootloader/boot.bin $(BUILD)/bootloader/stage2.bin $(BUILD)/kernel/kernel.bin > $@
 
 zero3.iso: os-image.bin
@@ -59,4 +66,4 @@ run-iso: zero3.iso
 clean:
 	rm -rf $(BUILD) os-image.bin zero3.iso
 
-.PHONY: all clean run iso run-iso
+.PHONY: all clean run iso run-iso check-tools
