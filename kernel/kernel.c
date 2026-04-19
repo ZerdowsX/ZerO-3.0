@@ -16,6 +16,17 @@ static void boot_splash(void) {
     }
 }
 
+static void boot_splash(void) {
+    gfx_clear(0);
+    gfx_rect(0, 0, SCREEN_W, SCREEN_H, 1);
+    gfx_rect(8, 8, SCREEN_W - 16, SCREEN_H - 16, 0);
+    gfx_text(76, 92, "ZerOS 2.0 by Zerdows", 15);
+
+    for (volatile int i = 0; i < 25000000; ++i) {
+        __asm__ volatile ("" ::: "memory");
+    }
+}
+
 void kmain(void) {
     boot_splash();
 
