@@ -7,6 +7,11 @@ void gfx_putpixel(i32 x, i32 y, u8 color) {
     VGA[y * SCREEN_W + x] = color;
 }
 
+u8 gfx_getpixel(i32 x, i32 y) {
+    if (x < 0 || y < 0 || x >= SCREEN_W || y >= SCREEN_H) return 0;
+    return VGA[y * SCREEN_W + x];
+}
+
 void gfx_clear(u8 color) {
     for (i32 y = 0; y < SCREEN_H; ++y) {
         for (i32 x = 0; x < SCREEN_W; ++x) {

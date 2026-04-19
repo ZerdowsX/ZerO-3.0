@@ -30,9 +30,6 @@ void kmain(void) {
         char c = keyboard_last_char();
         if (c) {
             gui_keyboard_input(c);
-            if (c == 'r' || c == 'R') {
-                gfx_text(8, 8, "Desktop redraw", 15);
-            }
         }
         __asm__ volatile ("hlt");
     }

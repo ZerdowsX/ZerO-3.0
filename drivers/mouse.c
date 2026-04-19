@@ -34,6 +34,15 @@ static u8 mouse_read(void) {
     return inb(0x60);
 }
 
+static int mouse_expect_ack(void) {
+    for (int i = 0; i < 4; ++i) {
+        u8 v = mouse_read();
+        if (v == 0xFA) return 1;
+        if (v == 0xFF) return 0;
+    }
+    return 0;
+}
+
 void mouse_init(void) {
     if (!mouse_wait_write()) return;
     outb(0x64, 0xA8);
@@ -49,9 +58,9 @@ void mouse_init(void) {
     outb(0x60, status);
 
     if (!mouse_write(0xF6)) return;
-    if (mouse_read() != 0xFA) return;
+    if (!mouse_expect_ack()) return;
     if (!mouse_write(0xF4)) return;
-    if (mouse_read() != 0xFA) return;
+    if (!mouse_expect_ack()) return;
 
     g_mouse_ready = 1;
 }
