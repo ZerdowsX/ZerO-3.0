@@ -2,10 +2,18 @@
 section .text
 global irq1_stub
 global irq12_stub
+global irq0_stub
 global idt_load
 
+extern irq0_handler
 extern irq1_handler
 extern irq12_handler
+
+irq0_stub:
+    pusha
+    call irq0_handler
+    popa
+    iretd
 
 irq1_stub:
     pusha

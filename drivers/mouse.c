@@ -5,48 +5,83 @@
 
 static u8 packet[3];
 static u8 packet_idx = 0;
+static int g_mouse_ready = 0;
 
-static void mouse_wait_write(void) {
-    while (inb(0x64) & 0x02) {}
+static int mouse_wait_write(void) {
+    for (u32 i = 0; i < 1000000; ++i) {
+        if (!(inb(0x64) & 0x02)) return 1;
+    }
+    return 0;
 }
 
-static void mouse_wait_read(void) {
-    while (!(inb(0x64) & 0x01)) {}
+static int mouse_wait_read(void) {
+    for (u32 i = 0; i < 1000000; ++i) {
+        if (inb(0x64) & 0x01) return 1;
+    }
+    return 0;
 }
 
-static void mouse_write(u8 data) {
-    mouse_wait_write();
+static int mouse_write(u8 data) {
+    if (!mouse_wait_write()) return 0;
     outb(0x64, 0xD4);
-    mouse_wait_write();
+    if (!mouse_wait_write()) return 0;
     outb(0x60, data);
+    return 1;
 }
 
 static u8 mouse_read(void) {
-    mouse_wait_read();
+    if (!mouse_wait_read()) return 0xFF;
     return inb(0x60);
 }
 
+static int mouse_expect_ack(void) {
+    for (int i = 0; i < 4; ++i) {
+        u8 v = mouse_read();
+        if (v == 0xFA) return 1;
+        if (v == 0xFF) return 0;
+    }
+    return 0;
+}
+
 void mouse_init(void) {
-    mouse_wait_write();
+    if (!mouse_wait_write()) return;
     outb(0x64, 0xA8);
 
-    mouse_wait_write();
+    if (!mouse_wait_write()) return;
     outb(0x64, 0x20);
     u8 status = mouse_read() | 0x02;
+    if (status == 0xFF) return;
 
-    mouse_wait_write();
+    if (!mouse_wait_write()) return;
     outb(0x64, 0x60);
-    mouse_wait_write();
+    if (!mouse_wait_write()) return;
     outb(0x60, status);
 
-    mouse_write(0xF6);
-    mouse_read();
-    mouse_write(0xF4);
-    mouse_read();
+    if (!mouse_write(0xF6)) return;
+    if (!mouse_expect_ack()) return;
+    if (!mouse_write(0xF4)) return;
+    if (!mouse_expect_ack()) return;
+
+    g_mouse_ready = 1;
+}
+
+int mouse_is_ready(void) {
+    return g_mouse_ready;
 }
 
 void irq12_handler(void) {
+    if (!g_mouse_ready) {
+        irq_ack(12);
+        return;
+    }
+
     u8 data = inb(0x60);
+
+    if (packet_idx == 0 && !(data & 0x08)) {
+        irq_ack(12);
+        return;
+    }
+
     packet[packet_idx++] = data;
 
     if (packet_idx == 3) {

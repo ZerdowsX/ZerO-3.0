@@ -3,6 +3,7 @@
 
 extern void irq1_stub(void);
 extern void irq12_stub(void);
+extern void irq0_stub(void);
 extern void idt_load(void* idtr);
 
 typedef struct {
@@ -39,8 +40,13 @@ static void pic_remap(void) {
     outb(0x21, 0x01); io_wait();
     outb(0xA1, 0x01); io_wait();
 
-    outb(0x21, 0x00);
-    outb(0xA1, 0x00);
+    /*
+     * Mask IRQ lines we do not handle yet.
+     * Master PIC: enable IRQ0 (timer), IRQ1 (keyboard) and IRQ2 (cascade to slave).
+     * Slave PIC:  enable IRQ12 (mouse).
+     */
+    outb(0x21, 0xF8);
+    outb(0xA1, 0xEF);
 }
 
 void irq_ack(u8 irq) {
@@ -54,6 +60,7 @@ void idt_init(void) {
     }
 
     pic_remap();
+    idt_set_gate(0x20, (u32)irq0_stub, 0x08, 0x8E);
     idt_set_gate(0x21, (u32)irq1_stub, 0x08, 0x8E);
     idt_set_gate(0x2C, (u32)irq12_stub, 0x08, 0x8E);
 
